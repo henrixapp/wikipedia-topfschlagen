@@ -59,6 +59,7 @@ std::pair<int*,int*> LinkTree::toCL(TreeWikiArticle articles)
     pair<int*,int*> result;
     int si=items.size();
     int * arrayed = new int[si];
+    std::fill_n(arrayed,si,-1);//TODO: richtigesmaximum setzen
     int* start_f_von= articles.toCL();
     {
     std::sort(items.begin(),items.end(),[](const WikiLink* a, const WikiLink* b)->bool
@@ -88,6 +89,13 @@ std::pair<int*,int*> LinkTree::toCL(TreeWikiArticle articles)
         arrayed[i-items.begin()]=((*i)->von());
     }
 }
+    int currentFill= size()-1;//Die aktuelle Füllung von hinten
+    for(int i= articles.size()-1;i>-1;i--)
+    {
+        if(start_f_von[i]==-1) start_f_von[i]=currentFill;//alten wert überschreiben
+        else currentFill=start_f_von[i];//Neu laden
+    }
+   // for(int i=0;i<articles.size();i++) if(start_f_von[i]==-1) cerr<<i<<"is fallsed"<<endl;
     result.second = start_f_von;
     result.first= arrayed;
      //müssen wir VonList noch mal pushen oder start_f_von

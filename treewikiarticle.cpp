@@ -120,7 +120,8 @@ int* TreeWikiArticle::toCL()
     int* items = new int[karte.size()];
     int size = *(items-1);
     cout<<"Groeßed:"<<size<<"Erstes"<<*items<<"Erstw"<<items[0]<<endl;
-    std::fill_n(items,karte.size(),0);
+    std::fill_n(items,karte.size(),-1);
+    items[0]=0;//Defaulting...
     cout<<"Groeßed:"<<size<<"Erstes"<<*items<<"Erstw"<<items[0]<<endl;
     return items;
 }

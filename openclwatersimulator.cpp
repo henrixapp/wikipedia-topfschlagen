@@ -67,10 +67,8 @@ std::vector<std::vector<int> > traceBack(int* von, int* start_f_von, cl_char* st
         cout<<"M"<<maximum<<endl;
         for(int j=start_f_von[article];j<maximum;j++)//TODO: bound check...
         {
-           // if(status[von[j]]<status_article)cout<<(int)status[von[j]]<<"E"<<von[j]<<converter(von[j])<<endl;
             if(status[von[j]]==status_article-1)
             {
-                 {int ser;cin>>ser;}
                 cout<<"Exchangign"<<von[j]<<converter(von[j])<<endl;
                 ergebnis.push_back(article);
                 article= von[j];//Fixed--> should make translation
