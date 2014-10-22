@@ -18,7 +18,6 @@ public:
     int heighestID();
 private:
     std::map<string,WikiArticle*> karte;
-    int count;
 };
 
 #endif // TREEWIKIARTICLE_H

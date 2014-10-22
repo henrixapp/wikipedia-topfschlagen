@@ -31,20 +31,6 @@ TreeWikiArticle::TreeWikiArticle()
 int count_ar =0;
 WikiArticle * TreeWikiArticle::find(string id)
 {
-   /* TreeManager<WikiArticle>::Decidor findor =[titel](WikiArticle* node)
-    {
-       // cout<<node<<"node"<<(node->Titel())<<" vs. "<<titel<<endl;
-        if((node->Titel())<(titel))
-        {
-            return 1;
-        } else if((node->Titel())==(titel))
-        {
-            return 0;
-        } else
-        {
-            return -1;
-        }
-    };*/
     WikiArticle* zw = NULL;
     if(id=="") return zw;//Titellos gibt es nicht
     auto i = karte.find(boost::to_lower_copy(id));
@@ -82,7 +68,7 @@ WikiArticle * TreeWikiArticle::find(string id)
 }
 void TreeWikiArticle::add(string title)
 {
-    WikiArticle * zw = new WikiArticle(title,count++);//ID ist aktuelle Größe
+    WikiArticle * zw = new WikiArticle(title,karte.size());//ID ist aktuelle Größe
 
     karte.insert(std::pair<string,WikiArticle*>(boost::to_lower_copy(title),zw));
 }
@@ -124,6 +110,7 @@ void TreeWikiArticle::load(string filename)
         WikiArticle*  zw = new WikiArticle(title,ID);
         karte.insert(std::pair<string,WikiArticle*>(boost::to_lower_copy(title),zw));
         if(i%5000==0)cout<<i<<". geladen"<<endl;
+        if((i>(size-10))||(ID>size))cout<<ID<<">"<<size<<"-->"<<title<<endl;
     }
     cout<<karte.size()<<" Artikel geladen. Bitte geladen..."<<endl;
     //cin>>size;

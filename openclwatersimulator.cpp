@@ -50,26 +50,31 @@ OpenCLWaterSimulator::OpenCLWaterSimulator(LinkTree &verb, TreeWikiArticle &arts
 //multi dimensional, da es mehrere Möglichkeiten gibt.
 //zunächst aber ein dimensional..., wobei wenn wir immer die teilstücke nehmen und zusammenstecken, abhängig von der Position
 //durch wechsel des ZU articles...
-std::vector<std::vector<int> > traceBack(int* von, int* start_f_von, cl_char* status,int von_article , int zu_article, int size, int size_connections)
+std::vector<std::vector<int> > traceBack(int* von, int* start_f_von, cl_char* status,int von_article , int zu_article, int size, int size_connections,function<string(int)> converter)
 {
     //Backbouncing
     std::vector<std::vector<int> >  result;
     vector<int> ergebnis;
+   // cin>>von_article;
     int article=zu_article;
 
     while(article!=von_article)
     {
-        //cout<<"article"<<article<<endl;
+        cout<<"article"<<article<<endl;
         cl_char status_article = status[article];
         cout<<"status is"<<(int)status_article<<endl;
         int maximum = ((article+1)<size)?start_f_von[article+1]:size_connections;
+        cout<<"M"<<maximum<<endl;
         for(int j=start_f_von[article];j<maximum;j++)//TODO: bound check...
         {
-            if(status[j]==status_article-1)
+           // if(status[von[j]]<status_article)cout<<(int)status[von[j]]<<"E"<<von[j]<<converter(von[j])<<endl;
+            if(status[von[j]]==status_article-1)
             {
-                cout<<"Exchangign"<<endl;
+                 {int ser;cin>>ser;}
+                cout<<"Exchangign"<<von[j]<<converter(von[j])<<endl;
                 ergebnis.push_back(article);
-                article= j;
+                article= von[j];//Fixed--> should make translation
+                //cin>>j;
                 break;
             }
         }
@@ -85,7 +90,7 @@ int OpenCLWaterSimulator::suche(int von, int zu)
     auto daten = verbindungen.toCL(articles);
     cout<<"Groeße"<<sizeof(daten.first)<<endl;
     int connection_count= sizeof(daten.first);
-    cout<<"Verbindungsangaben:"<<endl;
+   /* cout<<"Verbindungsangaben:"<<endl;
     for(int i=0;i<articles.size();i++)
     {
         cout<<i<<" "<<daten.second[i]<<endl;
@@ -94,10 +99,7 @@ int OpenCLWaterSimulator::suche(int von, int zu)
     for(int i=0;i<verbindungen.size();i++)
     {
         cout<<i<<" "<<daten.first[i]<<endl;
-    }
-    {
-        int irt;cin>>irt;
-    }
+    }*/
    try{
 
     cl::Buffer von_cl(context,CL_MEM_READ_ONLY|CL_MEM_USE_HOST_PTR,verbindungen.size()*sizeof(int),daten.first);
@@ -114,12 +116,16 @@ int OpenCLWaterSimulator::suche(int von, int zu)
     //schreiben dieser Daten
     cl_char *status_array= new cl_char[articles.size()];
     std::fill_n(status_array,articles.size(),(int8_t)-1);
-    for(int i=0;i<articles.size();i++)
+   /* for(int i=0;i<articles.size();i++)
     {
             if(status_array[i]!=-1) cout<<i<<":"<<(int)status_array[i]<<endl;
+    }*/
+    status_array[von]=(cl_char)0;//zu groß?!
+    for(int i=0;i<articles.size();i++)
+    {
+        if(status_array[i]!=-1) cout<<i<<":"<<(int)status_array[i]<<articles.find(i)->Titel()<<endl;
     }
-    status_array[von]=0;
-    int irt;cin>>irt;
+    //int irt;cin>>irt;
     queue.enqueueWriteBuffer(status, CL_TRUE, 0, bytes,status_array);
     //und einen Wert auf null setzen
     kernel.setArg(2,status);
@@ -131,12 +137,15 @@ int OpenCLWaterSimulator::suche(int von, int zu)
     cout<<"Target set..."<<endl;
     cl_char status_type=-1;
     kernel.setArg(5,(cl_char)0);
+    kernel.setArg(6,(cl_int)verbindungen.size());
     cout<<"kernel finished..."<<endl;
     cl::NDRange local_n(preferredSize);
     cl::NDRange global_n((int)(ceil(articles.size()/(float)preferredSize)*preferredSize));
     cl_char current_round =0;
     while(status_type==(cl_char)-1)
     {
+
+        /*
         int elements = articles.size();
         int * start_f_von =daten.second;
         int * von_array= daten.first;
@@ -170,7 +179,7 @@ int OpenCLWaterSimulator::suche(int von, int zu)
             cout<<(int)status_array[id]<<endl;
         }
         {int ser;cin>>ser;}
-        /*
+        */
         kernel.setArg(5,current_round);
         cl::Event event,schreiben;
         queue.enqueueNDRangeKernel(kernel,cl::NullRange,global_n,local_n,NULL,&event);
@@ -180,22 +189,24 @@ int OpenCLWaterSimulator::suche(int von, int zu)
         schreiben.wait();
         cout<<"Erfolgreich gemappt"<<endl;
         status_type =status_read[zu];
-        //for(int i=0;i<articles.size();i++)
+        /*for(int i=0;i<articles.size();i++)
         {
-//            if(status_read[i]!=-1) cout<<i<<":"<<(int)status_read[i]<<endl;
+            if(status_read[i]!=-1) cout<<i<<":"<<(int)status_read[i]<<articles.find(i)->Titel()<<endl;
         }
+        int serser;cin>>serser;*/
         cl::Event unmapping;
         queue.enqueueUnmapMemObject(status,status_read,NULL,&unmapping);
         unmapping.wait();
-        */
         cout<<"Status was "<<(int)(status_type)<<endl;
         current_round++;//erhöhen
     }
     cl::Event lesen;
-    cl_char * status_read = status_array;//(cl_char*)queue.enqueueMapBuffer(status,true,CL_MAP_READ,0,articles.size(),NULL,&lesen);
-  //  lesen.wait();
+    cl_char * status_read =(cl_char*)queue.enqueueMapBuffer(status,true,CL_MAP_READ,0,articles.size(),NULL,&lesen);
+    lesen.wait();
     cout<<"Tracing:"<<(int)current_round<<" bei "<<status_read[zu]<<endl;
-    auto result = traceBack(daten.first,daten.second,status_read,von,zu,articles.size(),verbindungen.size())[0];
+    auto result = traceBack(daten.first,daten.second,status_read,von,zu,articles.size(),verbindungen.size(),[=](int id){
+        return articles.find(id)->Titel();
+    })[0];
     cout<<"Ergebnis:"<<endl;
     for(auto i = result.begin();i!= result.end();i++)
     {
