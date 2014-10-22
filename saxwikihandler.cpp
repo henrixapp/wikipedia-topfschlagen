@@ -41,34 +41,32 @@
 // ---------------------------------------------------------------------------
 //  SAXWikiHandler: Constructors and Destructor
 // ---------------------------------------------------------------------------
-SAXWikiHandler::SAXWikiHandler(SQLConnection *a,bool article_adding) :
+SAXWikiHandler::SAXWikiHandler(bool article_adding, string wiki_base, string link_base) :
 
     fAttrCount(0)
     , fCharacterCount(0)
     , fElementCount(0)
     , fSpaceCount(0)
     , fSawErrors(false),
-    db(a),
-    liste(a),
+    liste(),
     article_adding(article_adding),
     zustand(Parsing_bullshit),
-    start_element(-1)//TODO: Change!
+    start_element(-1),//TODO: Change!
+  wiki_filename(wiki_base),
+  link_filename(link_base)
 {
-
     //DatabaseLayout anlegen
-    WikiArticle d(db,-1,"");
-    d.updateTableFormat();
-    WikiLink l(db,-1,0,0);
-    l.updateTableFormat();
     current = NULL;
+    cout<<"article adding"<<article_adding<<endl;
+    liste.load(wiki_filename);
+    if(link_base!="*")
+    links.load(link_base);
 }
 
 SAXWikiHandler::~SAXWikiHandler()
 {
-       if(article_adding) db->executeQueue("INSERT INTO WikiArticle(Titel) VALUES ");
-    else db->executeQueue("INSERT INTO WikiLink(von,zu) VALUES ");
-       db->close();
-    delete db;
+    liste.save(wiki_filename);
+    links.save(link_filename);
 }
 
 using namespace std;
@@ -85,6 +83,7 @@ std::string conv(const XMLCh* str, size_t len)
   string ss(s.localForm());
   trim(ss);//Todo leerzeichen durch _ ersetzen, um in Datei zu speichern
   replace_all(ss,"'","APX");//Coole standard ersetzung, kommt sonnst nichtfor
+  replace_all(ss," ","_");//Coole standard ersetzung, kommt sonnst nichtfor
   return ss;
 }
 void SAXWikiHandler::startElement(const   XMLCh* const     name
@@ -101,22 +100,19 @@ void SAXWikiHandler::startElement(const   XMLCh* const     name
         ++fElementCount;
         if(article_adding)
         {
-        if((fElementCount)%100==0)
-        {
-                db->executeQueue("INSERT INTO WikiArticle(Titel) VALUES ");
-            cout<<fElementCount<<". Titel:"<<title.str()<<std::endl;
+            if((fElementCount)%1000==0)
+            {
+                cout<<fElementCount<<". Titel:"<<title.str()<<std::endl;
 
-        }
-        {
-        WikiArticle* d = new WikiArticle(db,-1,title.str());
-        d->dequeSave();//Speichern und direkt wieder vergessen
-        delete d;
-        }
-
+            }
+                //hinzufügen
+                liste.add(title.str());
         }
         else //jeden dritten link einfangen
         {
-            db->executeQueue("INSERT INTO WikiLink(von,zu) VALUES ");
+            cout<<"Arbeite: "<<title.str();
+
+           //nichts zutun beim article hinzufügen
         }
         title.str("");
         fAttrCount += attributes.getLength();
@@ -139,19 +135,18 @@ void SAXWikiHandler::startElement(const   XMLCh* const     name
         current = liste.find(title.str());
         if(current==NULL)
         {
-
             zustand=Parsing_bullshit;
             cout<<"Bullshit bei "<<title.str();
             int a;
             cin>>a;
             return;
         }
-        if(current->id()<start_element)
+        if(current->ID()<start_element)
         {
             zustand=Parsing_bullshit;
 
         }
-          cout<<"Mit ID:"<<current->id()<<endl;
+          cout<<"Mit ID:"<<current->ID()<<endl;
 
     }
     else
@@ -204,10 +199,9 @@ void SAXWikiHandler::characters(  const   XMLCh* const     text
                     article_link.str("");
                     if(ziel!=NULL)//falls entrag existiert.
                     {
-                        WikiLink *w = new WikiLink(db,-1,current,ziel);
-                        w->dequeSave();
-                        delete w;
-                        if(count_link%200==0)db->executeQueue("INSERT INTO WikiLink(von,zu) VALUES ");//alle zweihundert backup
+                        WikiLink *w = new WikiLink(current->ID(),ziel->ID());
+                        links.add(w);
+                        //if(count_link%200==0)db->executeQueue("INSERT INTO WikiLink(von,zu) VALUES ");//alle zweihundert backup
                     }
                     else
                     {

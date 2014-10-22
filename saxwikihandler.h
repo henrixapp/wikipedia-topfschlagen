@@ -37,6 +37,7 @@ XERCES_CPP_NAMESPACE_END
 #include "database/sqliteconnection.h"
 #include "wikiarticle.h"
 #include "treewikiarticle.h"
+#include "linktree.h"
 enum state_parser
 {
     Parsing_title,
@@ -52,7 +53,7 @@ public:
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    SAXWikiHandler(SQLConnection* da,bool article_adding=false);
+    SAXWikiHandler(bool article_adding,string wiki_base,string link_base);
     ~SAXWikiHandler();
 
 
@@ -126,11 +127,13 @@ private:
     bool article_adding;
     std::stringstream title;
     std::stringstream article_link;
-    SQLConnection* db;
     state_parser zustand;
-    WikiArticle* current;
+    WikiArticle* current;//Der aktuelle artikel
     TreeWikiArticle liste;
     int start_element;//mit welchen element fangen wir an?
+    string wiki_filename;
+    string link_filename;
+    LinkTree links;
 };
 
 #endif // SAXWIKIHANDLER_H

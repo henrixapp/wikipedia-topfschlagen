@@ -3,6 +3,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 cmake_minimum_required(VERSION 2.8)
 add_subdirectory (database)
 add_subdirectory (Tree)
-aux_source_directory(. SRC_LIST)
-add_executable(${PROJECT_NAME} ${SRC_LIST})
-target_link_libraries (${PROJECT_NAME} -lxerces-c DatabaseWrapper Treelibrary)
+file(GLOB SRC_LIST "*.cpp")
+#Copieren des Quellcodes
+  configure_file(search.cl searching.cl
+                 COPYONLY)
+#entfernen von test.cpp
+list(REMOVE_ITEM SRC_LIST ${PROJECT_SOURCE_DIR}/search.cpp)
+list(REMOVE_ITEM SRC_LIST ${PROJECT_SOURCE_DIR}/main.cpp)
+add_executable(vorbereitung ${SRC_LIST} main.cpp)
+target_link_libraries (vorbereitung -lxerces-c DatabaseWrapper Treelibrary -lOpenCL)
+
+add_executable(suchen ${SRC_LIST} search.cpp)
+target_link_libraries (suchen -lxerces-c DatabaseWrapper Treelibrary -lOpenCL)

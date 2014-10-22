@@ -1,6 +1,6 @@
 #include "wikiarticle.h"
 using namespace std;
-WikiArticle::WikiArticle(SQLConnection *conn,int ID,string titel):BasisItem(conn,WIKIARTICLE_TABLE_NAME,ID)
+/*WikiArticle::WikiArticle(SQLConnection *conn,int ID,string titel):BasisItem(conn,WIKIARTICLE_TABLE_NAME,ID)
 {
     reserve();
     if(ID>-1)
@@ -17,6 +17,15 @@ WikiArticle::WikiArticle(SQLConnection *conn,int ID,string titel):BasisItem(conn
 void WikiArticle::reserve()
 {
     registerColumn(types::TEXT,"Titel");
+}*/
+WikiArticle::WikiArticle(string Title, int ID):__title(Title),__id(ID){
+
+}
+const string WikiArticle::Titel() const {
+    return __title;
+}
+const int WikiArticle::ID() const {
+    return __id;
 }
 std::size_t hash_value(WikiArticle* const &p)
 {

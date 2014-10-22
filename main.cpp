@@ -21,14 +21,15 @@ int count_error_links=0;
            XMLString::release(&message);
            return 1;
        }
-       bool article_adding= argc<3;
+       bool article_adding= argc==3;
        char* xmlFile = args[1];
        SAXParser* parser = new SAXParser();
        //parser->setDoValidation(true);
        parser->setDoNamespaces(true);    // optional
-        SQLConnection* db = new SQLITEconnection();
-        db->connect("/media/ramdisk/simple_wiki2.sqlite");
-       DocumentHandler* docHandler = new SAXWikiHandler(db);
+        //SQLConnection* db = new SQLITEconnection();
+       // db->connect("/media/ramdisk/simple_wiki2.sqlite");
+       if(article_adding) cout<<"DOING magick..."<<endl;
+       DocumentHandler* docHandler = new SAXWikiHandler(article_adding,string(args[2]),string((argc==4)?args[3]:"*"));
        ErrorHandler* errHandler = (ErrorHandler*) docHandler;
        parser->setDocumentHandler(docHandler);
        parser->setErrorHandler(errHandler);
