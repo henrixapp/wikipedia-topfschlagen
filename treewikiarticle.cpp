@@ -17,16 +17,6 @@
 TreeWikiArticle::TreeWikiArticle()
 {
     int count;
-    /*DatabaseVector<WikiArticle> alle(db,WIKIARTICLE_TABLE_NAME);
-    alle.loadAll();
-    int count =0;
-    for(auto i= alle.begin();i!=alle.end();++i)
-    {
-        insert(decidor,*i);
-        (++count);
-        if(true) cout<<"Höhe: "<<height()<<" Elemente: "<<count<<endl;
-    }
-    cout<<"Height:"<<height()<<endl;*/
 }
 int count_ar =0;
 WikiArticle * TreeWikiArticle::find(string id)
@@ -35,7 +25,6 @@ WikiArticle * TreeWikiArticle::find(string id)
     if(id=="") return zw;//Titellos gibt es nicht
     auto i = karte.find(boost::to_lower_copy(id));
     if(i!=karte.end()) zw = (*i).second;
-    //cout<<"zw:"<<zw<<endl;
     if(zw==NULL)
     {
 
@@ -79,7 +68,7 @@ WikiArticle * TreeWikiArticle::find(int id)
 
 void TreeWikiArticle::save(string filename)
 {
-    cout<<"SAVING to "<<filename<<endl;
+    cout<<"SAVING Articles to "<<filename<<endl;
     ofstream datei(filename);
     datei<<karte.size()<<endl;
     for(auto i = karte.begin();i!= karte.end();++i)
@@ -96,7 +85,7 @@ void TreeWikiArticle::load(string filename)
     ifstream datei(filename);
     int size=0;
     datei>>size;
-    cout<<"Elemente:"<<size<<endl;
+    cout<<"Artikel laut Datei:"<<size<<endl;
     for(int i=0;i<size;++i)
     {
         int ID;
@@ -104,25 +93,18 @@ void TreeWikiArticle::load(string filename)
         datei>>ID;
         std::getline(datei,title,']');
         boost::algorithm::replace_all(title," ","");
-       // cout<<"<"<<title<<">"<<endl;int sizae;
-        //cin>>sizae;
-       // datei.getline(title,1000,']');
         WikiArticle*  zw = new WikiArticle(title,ID);
         karte.insert(std::pair<string,WikiArticle*>(boost::to_lower_copy(title),zw));
         if(i%5000==0)cout<<i<<". geladen"<<endl;
-        if((i>(size-10))||(ID>size))cout<<ID<<">"<<size<<"-->"<<title<<endl;
     }
-    cout<<karte.size()<<" Artikel geladen. Bitte geladen..."<<endl;
-    //cin>>size;
+    cout<<karte.size()<<" Artikel geladen."<<endl;
 }
 int* TreeWikiArticle::toCL()
 {
     int* items = new int[karte.size()];
     int size = *(items-1);
-    cout<<"Groeßed:"<<size<<"Erstes"<<*items<<"Erstw"<<items[0]<<endl;
     std::fill_n(items,karte.size(),-1);
     items[0]=0;//Defaulting...
-    cout<<"Groeßed:"<<size<<"Erstes"<<*items<<"Erstw"<<items[0]<<endl;
     return items;
 }
 size_t TreeWikiArticle::size() const

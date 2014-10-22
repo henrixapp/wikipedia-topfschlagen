@@ -187,11 +187,6 @@ int OpenCLWaterSimulator::suche(int von, int zu)
         schreiben.wait();
         cout<<"Erfolgreich gemappt"<<endl;
         status_type =status_read[zu];
-        /*for(int i=0;i<articles.size();i++)
-        {
-            if(status_read[i]!=-1) cout<<i<<":"<<(int)status_read[i]<<articles.find(i)->Titel()<<endl;
-        }
-        int serser;cin>>serser;*/
         cl::Event unmapping;
         queue.enqueueUnmapMemObject(status,status_read,NULL,&unmapping);
         unmapping.wait();
@@ -201,11 +196,11 @@ int OpenCLWaterSimulator::suche(int von, int zu)
     cl::Event lesen;
     cl_char * status_read =(cl_char*)queue.enqueueMapBuffer(status,true,CL_MAP_READ,0,articles.size(),NULL,&lesen);
     lesen.wait();
-    cout<<"Tracing:"<<(int)current_round<<" bei "<<status_read[zu]<<endl;
+    cout<<"Wegfindung, erwartetes Ergebnis:"<<(int)status_read[zu]<<endl;
     auto result = traceBack(daten.first,daten.second,status_read,von,zu,articles.size(),verbindungen.size(),[=](int id){
         return articles.find(id)->Titel();
     })[0];
-    cout<<"Ergebnis:"<<endl;
+    cout<<"Ergebnis["<<result.size()-1<<" Klicks]:"<<endl;
     for(auto i = result.begin();i!= result.end();i++)
     {
         cout<<*i<<" ist der Artikel:"<<articles.find(*i)->Titel()<<endl;

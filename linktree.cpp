@@ -34,18 +34,11 @@ void LinkTree::load(string filename)
         int von, zu;
         in>>von;
         in>>zu;
-       if(zu==0)
-       {cout<<von<<"-->"<<zu<<endl; cin>>zu;}
         auto newthing = new WikiLink(von,zu);
         items.push_back(newthing);
-        if(i<(10))
-        {
-            cout<<(items.at(i))->von()<<endl;
-            cout<<(items.at(i))->zu()<<endl;
-      }
             // int a; cin>>a;
     }
-    cout<<size<<" Elemente geladen."<<endl;
+    cout<<size<<" Links geladen."<<endl;
 }
 
 void LinkTree::add(WikiLink *a)
@@ -66,8 +59,6 @@ std::pair<int*,int*> LinkTree::toCL(TreeWikiArticle articles)
     {
        return a->zu()<b->zu();
     });
-    cout<<items[0]->zu()<<" "<<(*(items.end()-1))->zu()<<endl;
-     cout<<(*items.begin())->zu()<<" "<<(*(items.end()-1))->zu()<<" "<<(*items.begin())->von()<<endl;
     int currentID=0;
     int groesse=0;
     for(auto i= items.begin();i!=items.end();i++)

@@ -23,15 +23,23 @@ int count_error_links=0;
        wiki.load(wiki_base);
        LinkTree links;
        links.load(links_base);
-       cout<<"Gib bitte den Namen ein:";
-       string titel;
-       cin>>titel;
-       auto start = wiki.find(titel);
-       cout<<"Artikel:"<<start->Titel()<<" mit ID:"<<start->ID()<<endl;
-       cout<<"Gib bitte den Namen ein:";
-       string ende;
-       cin>>ende;
-       auto ende_a = wiki.find(ende);
+       WikiArticle* start =NULL;
+       while(start==NULL)
+       {
+           cout<<"Gib bitte den Titel des Startartikels ein:";
+           string titel;
+           cin>>titel;
+            start = wiki.find(titel);
+       }
+       cout<<"Startartikel:"<<start->Titel()<<" mit ID:"<<start->ID()<<endl;
+       auto ende_a= (WikiArticle*)NULL;
+       while(ende_a==NULL)
+       {
+           cout<<"Gib bitte den Titel des Zielartikels ein:";
+           string ende;
+           cin>>ende;
+            ende_a = wiki.find(ende);
+       }
        cout<<"Zielartikel:"<<ende_a->Titel()<<" mit ID:"<<ende_a->ID()<<endl;
        cout<<"Starte OpenCL..."<<endl;
        OpenCLWaterSimulator searchAgent(links,wiki);
