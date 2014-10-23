@@ -39,6 +39,15 @@ OpenCLWaterSimulator::OpenCLWaterSimulator(LinkTree &verb, TreeWikiArticle &arts
    //kernel.getWorkGroupInfo(devices[0],
           // CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,&preferredSize);
    std::cout<<"Verwendete Größe: "<<preferredSize<<std::endl;
+   //Kopieren vorbereiten, erstellen der Daten
+   daten = verbindungen.toCL(articles);
+
+   von_cl= cl::Buffer(context,CL_MEM_READ_ONLY|CL_MEM_USE_HOST_PTR,verbindungen.size()*sizeof(int),daten.first);
+   cout<<"Setzen:0"<<endl;
+   kernel.setArg(0,von_cl);
+   cout<<"erstellen:1"<<endl;
+   start_f_von_cl= cl::Buffer(context,CL_MEM_READ_ONLY|CL_MEM_USE_HOST_PTR,articles.size()*sizeof(int),daten.second);
+   cout<<"Setzen:1"<<endl;
 }
     catch(cl::Error &e)
     {
@@ -47,6 +56,12 @@ OpenCLWaterSimulator::OpenCLWaterSimulator(LinkTree &verb, TreeWikiArticle &arts
         exit(-1);
     }
 }
+OpenCLWaterSimulator::~OpenCLWaterSimulator()
+{
+    delete[] daten.first;
+    delete[] daten.second;
+}
+
 //multi dimensional, da es mehrere Möglichkeiten gibt.
 //zunächst aber ein dimensional..., wobei wenn wir immer die teilstücke nehmen und zusammenstecken, abhängig von der Position
 //durch wechsel des ZU articles...
@@ -84,28 +99,8 @@ std::vector<std::vector<int> > traceBack(int* von, int* start_f_von, cl_char* st
 
 int OpenCLWaterSimulator::suche(int von, int zu)
 {
-    //Kopieren vorbereiten, erstellen der Daten
-    auto daten = verbindungen.toCL(articles);
-    cout<<"Groeße"<<sizeof(daten.first)<<endl;
-    int connection_count= sizeof(daten.first);
-   /* cout<<"Verbindungsangaben:"<<endl;
-    for(int i=0;i<articles.size();i++)
-    {
-        cout<<i<<" "<<daten.second[i]<<endl;
-    }
-    cout<<"Übergangstabelle:"<<endl;
-    for(int i=0;i<verbindungen.size();i++)
-    {
-        cout<<i<<" "<<daten.first[i]<<endl;
-    }*/
    try{
 
-    cl::Buffer von_cl(context,CL_MEM_READ_ONLY|CL_MEM_USE_HOST_PTR,verbindungen.size()*sizeof(int),daten.first);
-    cout<<"Setzen:0"<<endl;
-    kernel.setArg(0,von_cl);
-    cout<<"erstellen:1"<<endl;
-    cl::Buffer start_f_von_cl(context,CL_MEM_READ_ONLY|CL_MEM_USE_HOST_PTR,articles.size()*sizeof(int),daten.second);
-    cout<<"Setzen:1"<<endl;
     kernel.setArg(1,start_f_von_cl);
     cout<<"Working on status..."<<endl;
     //Status array erstellen
@@ -208,8 +203,7 @@ int OpenCLWaterSimulator::suche(int von, int zu)
     cl::Event unmapping;
     queue.enqueueUnmapMemObject(status,status_read,NULL,&unmapping);
     unmapping.wait();
-    delete [] daten.first;
-    delete[] daten.second;
+    delete[] status_array;
     return status_type;
     }
     catch(cl::Error &e)

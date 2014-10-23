@@ -13,12 +13,18 @@ LinkTree::~LinkTree()
 void LinkTree::save(string filename)
 {
     ofstream o;
-    o.open(filename);
-    o<<items.size()<<endl;//endl vergessen---
+    o.open(filename,ios::out|ios::binary);
+    int size=items.size();
+    o.write((char*)&size,sizeof(int));//endl vergessen---
     int countc =0;
     for(auto i= items.begin();i!=items.end();++i)
     {
-        o<<(*i)->toFile()<<endl;
+        //o<<(*i)->toFile()<<endl;
+        int von,zu;
+        von= (*i)->von();
+        zu=(*i)->zu();
+        o.write((char*)&von,sizeof(int));
+        o.write((char*)&zu,sizeof(int));
         countc++;
     }
     cout<<"Anzahl: "<<countc<<endl;
@@ -26,14 +32,14 @@ void LinkTree::save(string filename)
 }
 void LinkTree::load(string filename)
 {
-    ifstream in(filename);
+    ifstream in(filename,ios::in|ios::binary);
     int size=0;
-    in>>size;
+    in.read((char*)&size,sizeof(int));
     for(int i=0;i<size;i++)
     {
         int von, zu;
-        in>>von;
-        in>>zu;
+        in.read((char*)&von,sizeof(int));
+        in.read((char*)&zu,sizeof(int));
         auto newthing = new WikiLink(von,zu);
         items.push_back(newthing);
             // int a; cin>>a;

@@ -23,7 +23,12 @@ int count_error_links=0;
        wiki.load(wiki_base);
        LinkTree links;
        links.load(links_base);
-       WikiArticle* start =NULL;
+       cout<<"Starte OpenCL..."<<endl;
+       OpenCLWaterSimulator searchAgent(links,wiki);
+       bool running=true;
+       while(running)
+       {
+             WikiArticle* start =NULL;
        while(start==NULL)
        {
            cout<<"Gib bitte den Titel des Startartikels ein:";
@@ -41,11 +46,13 @@ int count_error_links=0;
             ende_a = wiki.find(ende);
        }
        cout<<"Zielartikel:"<<ende_a->Titel()<<" mit ID:"<<ende_a->ID()<<endl;
-       cout<<"Starte OpenCL..."<<endl;
-       OpenCLWaterSimulator searchAgent(links,wiki);
        cout<<"Starte Suche...";
        int result = searchAgent.suche(start->ID(),ende_a->ID());
        cout<<"Ergebnis:"<<result;
+       cout<<"Beenden [Y/n]?";
+       string answer;cin>>answer;
+       if(answer=="Y") running=false;
+       }
        return 0;
    }
 
