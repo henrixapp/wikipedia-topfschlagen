@@ -1,6 +1,13 @@
 #include "openclwatersimulator.h"
 #include <iostream>
 #include <fstream>
+#include <xercesc/parsers/SAXParser.hpp>
+   #include <xercesc/sax/HandlerBase.hpp>
+   #include <xercesc/util/XMLString.hpp>
+   #include <iostream>
+
+   using namespace std;
+   using namespace xercesc;
 OpenCLWaterSimulator::OpenCLWaterSimulator(LinkTree &verb, TreeWikiArticle &arts):articles(arts),verbindungen(verb)
 {
 
@@ -65,6 +72,7 @@ OpenCLWaterSimulator::~OpenCLWaterSimulator()
 //multi dimensional, da es mehrere Möglichkeiten gibt.
 //zunächst aber ein dimensional..., wobei wenn wir immer die teilstücke nehmen und zusammenstecken, abhängig von der Position
 //durch wechsel des ZU articles...
+//Der erste artikel wird !immer hinzugefügt!
 std::vector<std::vector<int> > traceBack(int* von, int* start_f_von, cl_char* status,int von_article , int zu_article, int size, int size_connections,function<string(int)> converter)
 {
     //Backbouncing
@@ -73,31 +81,41 @@ std::vector<std::vector<int> > traceBack(int* von, int* start_f_von, cl_char* st
    // cin>>von_article;
     int article=zu_article;
 
-    while(article!=von_article)
+    if(article!=von_article)
     {
-        cout<<"article"<<article<<endl;
+      //  cout<<"article"<<article<<endl;
         cl_char status_article = status[article];
-        cout<<"status is"<<(int)status_article<<endl;
+       // cout<<"status is"<<(int)status_article<<endl;
         int maximum = ((article+1)<size)?start_f_von[article+1]:size_connections;
-        cout<<"M"<<maximum<<endl;
+//        cout<<"M"<<maximum<<endl;
         for(int j=start_f_von[article];j<maximum;j++)//TODO: bound check...
         {
             if(status[von[j]]==status_article-1)
             {
-                cout<<"Exchangign"<<von[j]<<converter(von[j])<<endl;
-                ergebnis.push_back(article);
-                article= von[j];//Fixed--> should make translation
+              //  cout<<"Exchangign"<<von[j]<<converter(von[j])<<endl;
+                //Rekur
+                auto zw = traceBack(von,start_f_von,status,von_article,von[j],size,size_connections,converter);
+                for(auto i=zw.begin();i!=zw.end();++i)
+		{
+			result.push_back(*i);
+		}
+		//article= von[j];//Fixed--> should make translation
                 //cin>>j;
-                break;
             }
         }
     }
-    ergebnis.push_back(article);
-    result.push_back(ergebnis);
+    else {
+	//ergebnis.push_back(article);
+	result.push_back(ergebnis);//empty end recursion
+}
+    for(auto i = result.begin();i!=result.end();++i)
+    {
+	(*i).push_back(article);
+    }
     return result;
 }
 
-int OpenCLWaterSimulator::suche(int von, int zu)
+std::vector<std::vector<int> >  OpenCLWaterSimulator::suche(int von, int zu)
 {
    try{
 
@@ -114,10 +132,6 @@ int OpenCLWaterSimulator::suche(int von, int zu)
             if(status_array[i]!=-1) cout<<i<<":"<<(int)status_array[i]<<endl;
     }*/
     status_array[von]=(cl_char)0;//zu groß?!
-    for(int i=0;i<articles.size();i++)
-    {
-        if(status_array[i]!=-1) cout<<i<<":"<<(int)status_array[i]<<articles.find(i)->Titel()<<endl;
-    }
     //int irt;cin>>irt;
     queue.enqueueWriteBuffer(status, CL_TRUE, 0, bytes,status_array);
     //und einen Wert auf null setzen
@@ -135,6 +149,7 @@ int OpenCLWaterSimulator::suche(int von, int zu)
     cl::NDRange local_n(preferredSize);
     cl::NDRange global_n((int)(ceil(articles.size()/(float)preferredSize)*preferredSize));
     cl_char current_round =0;
+    const unsigned long time = XMLPlatformUtils::getCurrentMillis();
     while(status_type==(cl_char)-1)
     {
 
@@ -180,31 +195,28 @@ int OpenCLWaterSimulator::suche(int von, int zu)
         zuwarten.push_back(event);
         char * status_read = (char*)queue.enqueueMapBuffer(status,true,CL_MAP_READ,0,articles.size(),&zuwarten,&schreiben);
         schreiben.wait();
-        cout<<"Erfolgreich gemappt"<<endl;
+     //   cout<<"Erfolgreich gemappt"<<endl;
         status_type =status_read[zu];
         cl::Event unmapping;
         queue.enqueueUnmapMemObject(status,status_read,NULL,&unmapping);
         unmapping.wait();
-        cout<<"Status was "<<(int)(status_type)<<endl;
+       // cout<<"Status was "<<(int)(status_type)<<endl;
         current_round++;//erhöhen
     }
+
     cl::Event lesen;
     cl_char * status_read =(cl_char*)queue.enqueueMapBuffer(status,true,CL_MAP_READ,0,articles.size(),NULL,&lesen);
     lesen.wait();
-    cout<<"Wegfindung, erwartetes Ergebnis:"<<(int)status_read[zu]<<endl;
+    const unsigned long time2 = XMLPlatformUtils::getCurrentMillis();
+    cout<<"Wegfindung nach "<<time2-time<<" Millisekunden abgeschlossen, erwartetes Ergebnis:"<<(int)status_read[zu]<<endl;
     auto result = traceBack(daten.first,daten.second,status_read,von,zu,articles.size(),verbindungen.size(),[=](int id){
         return articles.find(id)->Titel();
-    })[0];
-    cout<<"Ergebnis["<<result.size()-1<<" Klicks]:"<<endl;
-    for(auto i = result.begin();i!= result.end();i++)
-    {
-        cout<<*i<<" ist der Artikel:"<<articles.find(*i)->Titel()<<endl;
-    }
+    });
     cl::Event unmapping;
     queue.enqueueUnmapMemObject(status,status_read,NULL,&unmapping);
     unmapping.wait();
     delete[] status_array;
-    return status_type;
+    return result;
     }
     catch(cl::Error &e)
     {

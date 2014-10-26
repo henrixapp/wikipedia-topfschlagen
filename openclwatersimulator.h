@@ -10,7 +10,7 @@ class OpenCLWaterSimulator
 public:
     OpenCLWaterSimulator(LinkTree& verbindungen,TreeWikiArticle& artics);
     ~OpenCLWaterSimulator();
-    int suche(int von, int zu);
+    std::vector<std::vector<int> > suche(int von, int zu);
 private:
     cl::CommandQueue queue;
      cl::Kernel kernel;

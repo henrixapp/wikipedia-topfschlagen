@@ -47,8 +47,16 @@ int count_error_links=0;
        }
        cout<<"Zielartikel:"<<ende_a->Titel()<<" mit ID:"<<ende_a->ID()<<endl;
        cout<<"Starte Suche...";
-       int result = searchAgent.suche(start->ID(),ende_a->ID());
-       cout<<"Ergebnis:"<<result;
+       auto result = searchAgent.suche(start->ID(),ende_a->ID());
+       cout<<"Ergebnis ["<<result[0].size()-1<<" Klicks] über "<<result.size()<<" Wege:"<<endl;
+       for(int j=0;j<result.size();j++)
+       {
+           cout<<j<<". Weg:"<<endl;
+           for(auto i = result[j].begin();i!= result[j].end();i++)
+           {
+               cout<<*i<<" ist der Artikel:"<<wiki.find(*i)->Titel()<<endl;
+           }
+        }
        cout<<"Beenden [Y/n]?";
        string answer;cin>>answer;
        if(answer=="Y") running=false;
