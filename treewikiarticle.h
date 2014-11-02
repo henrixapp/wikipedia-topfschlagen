@@ -18,6 +18,7 @@ public:
     int heighestID();
 private:
     std::map<string,WikiArticle*> karte;
+    map<int,WikiArticle*> karte_second;
 };
 
 #endif // TREEWIKIARTICLE_H
