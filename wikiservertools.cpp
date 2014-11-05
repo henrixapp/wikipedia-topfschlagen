@@ -152,12 +152,17 @@ void WikiServerTools::handle_post(http_request request)
                     }
                 }
             }
-            json::value response;
+            json::value response,data;
             response["nodes"]=nodes;
             response["edges"]=edges;
             //response["status"]=json::value::string("OK");
            // cout<<"Hier durch"<<response<<endl;
-            request.reply(200,response);
+            data["sigma"] =response;
+            json::value stats;
+            stats["laenge"] = json::value::number((int)result[0].size()-1);
+            stats["wege"] = json::value::number((int)result.size());
+            data["stats"]=stats;
+            request.reply(200,data);
             return;
         });
         return;
