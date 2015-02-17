@@ -14,6 +14,7 @@ file(GLOB SRC_LIST "*.cpp")
 list(REMOVE_ITEM SRC_LIST ${PROJECT_SOURCE_DIR}/search.cpp)
 list(REMOVE_ITEM SRC_LIST ${PROJECT_SOURCE_DIR}/main.cpp)
 list(REMOVE_ITEM SRC_LIST ${PROJECT_SOURCE_DIR}/server.cpp)
+list(REMOVE_ITEM SRC_LIST ${PROJECT_SOURCE_DIR}/fardistance_travelling.cpp)
 add_executable(vorbereitung ${SRC_LIST} main.cpp)
 target_link_libraries (vorbereitung -lxerces-c DatabaseWrapper  Treelibrary -lOpenCL ${Casablanca_LIBRARIES} cpprest)
 
@@ -22,3 +23,6 @@ target_link_libraries (suchen -lxerces-c DatabaseWrapper  Treelibrary -lOpenCL $
 
 add_executable(server ${SRC_LIST} server.cpp)
 target_link_libraries (server -lxerces-c DatabaseWrapper  Treelibrary -lOpenCL ${Casablanca_LIBRARIES} cpprest)
+
+add_executable(abstands_bestimmung ${SRC_LIST} fardistance_travelling.cpp)
+target_link_libraries (abstands_bestimmung -lxerces-c DatabaseWrapper  Treelibrary -lOpenCL ${Casablanca_LIBRARIES} cpprest)

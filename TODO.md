@@ -1,0 +1,2 @@
+ - Seiten die Wikipedia: am Anfang haben außschließen (für Abstandsbestimmung sehr irritierend
+ - #REDIRECTs berücksichtigen, wegen Abstand
