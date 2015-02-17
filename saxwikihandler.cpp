@@ -53,7 +53,7 @@ SAXWikiHandler::SAXWikiHandler(bool article_adding, string wiki_base, string lin
     zustand(Parsing_bullshit),
     start_element(-1),//TODO: Change!
   wiki_filename(wiki_base),
-  link_filename(link_base)
+  link_filename(link_base),links(&liste)
 {
     //DatabaseLayout anlegen
     current = NULL;

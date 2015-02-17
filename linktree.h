@@ -7,22 +7,23 @@ using namespace std;
 class LinkTree
 {
 public:
-    LinkTree();
+    LinkTree(TreeWikiArticle *items);
     ~LinkTree();
     void add(WikiLink* a);
     void save(string filename);
     void load(string filename);
-    //gibt nach den "zu" gesortete Ints von zurück
-    int * toVonList();
-    //liefert die IDs von dem zurück
-    int * toStart_F_Von();
     //first: ist von list
     //second: start_f_von List
-    pair<int*,int*> toCL(TreeWikiArticle items);
+    pair<int*,int*> toCL();
     size_t size() const;
 private:
+    pair<int*,int*> generateLinks(TreeWikiArticle items);
     vector<WikiLink*> items;
-
+    int * __vonList;
+    int * __start_f_von_List;
+    //Store a pointer, for use in save.
+    TreeWikiArticle* articles;
+    int SizevonListe;
 };
 
 #endif // LINKTREE_H

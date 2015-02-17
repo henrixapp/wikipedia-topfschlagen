@@ -47,7 +47,7 @@ OpenCLWaterSimulator::OpenCLWaterSimulator(LinkTree &verb, TreeWikiArticle &arts
           // CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,&preferredSize);
    std::cout<<"Verwendete Größe: "<<preferredSize<<std::endl;
    //Kopieren vorbereiten, erstellen der Daten
-   daten = verbindungen.toCL(articles);
+   daten = verbindungen.toCL();
 
    von_cl= cl::Buffer(context,CL_MEM_READ_ONLY|CL_MEM_USE_HOST_PTR,verbindungen.size()*sizeof(int),daten.first);
    cout<<"Setzen:0"<<endl;
@@ -111,6 +111,15 @@ std::vector<std::vector<int> > traceBack(int* von, int* start_f_von, cl_char* st
     for(auto i = result.begin();i!=result.end();++i)
     {
 	(*i).push_back(article);
+    }
+    return result;
+}
+int besuchteFelder(cl_char* status, int length)
+{
+    int result =0;
+    for(int i=0; i<length;i++)
+    {
+        if(status[i]!= -1) result++;
     }
     return result;
 }
@@ -195,12 +204,12 @@ std::vector<std::vector<int> >  OpenCLWaterSimulator::suche(int von, int zu)
         zuwarten.push_back(event);
         char * status_read = (char*)queue.enqueueMapBuffer(status,true,CL_MAP_READ,0,articles.size(),&zuwarten,&schreiben);
         schreiben.wait();
-     //   cout<<"Erfolgreich gemappt"<<endl;
+          cout<<"Erfolgreich gemappt"<<endl;
         status_type =status_read[zu];
         cl::Event unmapping;
         queue.enqueueUnmapMemObject(status,status_read,NULL,&unmapping);
         unmapping.wait();
-       // cout<<"Status was "<<(int)(status_type)<<endl;
+        cout<<"Status was "<<(int)(status_type)<<endl;
         current_round++;//erhöhen
     }
 
@@ -209,6 +218,7 @@ std::vector<std::vector<int> >  OpenCLWaterSimulator::suche(int von, int zu)
     lesen.wait();
     const unsigned long time2 = XMLPlatformUtils::getCurrentMillis();
     cout<<"Wegfindung nach "<<time2-time<<" Millisekunden abgeschlossen, erwartetes Ergebnis:"<<(int)status_read[zu]<<endl;
+    cout<<"Besuchte Felder:"<<besuchteFelder(status_read,articles.size())<<endl;
     auto result = traceBack(daten.first,daten.second,status_read,von,zu,articles.size(),verbindungen.size(),[=](int id){
         return articles.find(id)->Titel();
     });
@@ -222,4 +232,75 @@ std::vector<std::vector<int> >  OpenCLWaterSimulator::suche(int von, int zu)
     {
         cout<<"Fehler:"<<e.err()<<" bei "<<e.what()<<endl;
     }
+}
+/**
+ * @brief OpenCLWaterSimulator::parameterisierteAusfuehrung Führt die Simulation mit Hilfe des Kernels durch.
+ * Es gibt eine Einschränkung von den Stellen, dann ist aber auch wirklich alles erlaub ;)
+ * weiter_laufen: READ only!!!...
+ * parameter, aktuelle Runde, Zeit...
+ */
+void OpenCLWaterSimulator::parameterisierteAusfuehrung(function<bool(char*,unsigned long,unsigned long)> weiter_laufen,function<void(char*)> initialisierung,
+                                                       function<void(char*)> endbewertung)
+{
+    try{
+     kernel.setArg(1,start_f_von_cl);
+     cout<<"Working on status..."<<endl;
+     //Status array erstellen
+     size_t bytes = sizeof(cl_char)*articles.size();
+     cl::Buffer status(context, CL_MEM_READ_WRITE, bytes);
+     //schreiben dieser Daten
+     cl_char *status_array= new cl_char[articles.size()];
+     std::fill_n(status_array,articles.size(),(int8_t)-1);
+    initialisierung((char*)status_array);
+     //should be change to mapping... write only--- memory save
+     queue.enqueueWriteBuffer(status, CL_TRUE, 0, bytes,status_array);
+     //und einen Wert auf null setzen
+     kernel.setArg(2,status);
+     int elements_count = articles.size();
+     kernel.setArg(3,elements_count);
+     kernel.setArg(4,0);
+     //kernel.setArg(4,zu);
+     cl_char status_type=-1;
+     kernel.setArg(5,(cl_char)0);
+     kernel.setArg(6,(cl_int)verbindungen.size());
+     cl::NDRange local_n(preferredSize);
+     cl::NDRange global_n((int)(ceil(articles.size()/(float)preferredSize)*preferredSize));
+     cl_char current_round =0;
+     const unsigned long time = XMLPlatformUtils::getCurrentMillis();
+     bool running= weiter_laufen((char*)status_array,current_round,0);//erstes Aufsetzen...
+     //schonmal weg gehen
+
+     while(running)
+     {
+         kernel.setArg(5,current_round);
+         cl::Event event,schreiben;
+         queue.enqueueNDRangeKernel(kernel,cl::NullRange,global_n,local_n,NULL,&event);
+         vector<cl::Event> zuwarten;
+         zuwarten.push_back(event);
+         char * status_read = (char*)queue.enqueueMapBuffer(status,true,CL_MAP_READ,0,articles.size(),&zuwarten,&schreiben);
+         schreiben.wait();
+      //   cout<<"Erfolgreich gemappt"<<endl;
+         running = weiter_laufen((char*)status_read,current_round,XMLPlatformUtils::getCurrentMillis()-time);
+         cl::Event unmapping;
+         queue.enqueueUnmapMemObject(status,status_read,NULL,&unmapping);
+         unmapping.wait();
+         current_round++;//erhöhen
+     }
+
+     cl::Event lesen;
+     cl_char * status_read =(cl_char*)queue.enqueueMapBuffer(status,true,CL_MAP_READ,0,articles.size(),NULL,&lesen);
+     lesen.wait();
+     const unsigned long time2 = XMLPlatformUtils::getCurrentMillis();
+     cout<<"Wegfindung nach "<<time2-time<<" Millisekunden abgeschlossen";
+     cout<<"Besuchte Felder:"<<besuchteFelder(status_read,articles.size())<<endl;
+     endbewertung((char*)status_read);
+     cl::Event unmapping;
+     queue.enqueueUnmapMemObject(status,status_read,NULL,&unmapping);
+     unmapping.wait();
+     delete[] status_array;
+     }
+     catch(cl::Error &e)
+     {
+         cout<<"Fehler:"<<e.err()<<" bei "<<e.what()<<endl;
+     }
 }

@@ -62,7 +62,7 @@ void TreeWikiArticle::add(string title)
     karte.insert(std::pair<string,WikiArticle*>(boost::to_lower_copy(title),zw));
     karte_second.insert(std::pair<int,WikiArticle*>(zw->ID(),zw));
 }
-WikiArticle * TreeWikiArticle::find(int id)
+WikiArticle * TreeWikiArticle::find(int id) const
 {
     auto result= karte_second.find(id);
     if(result==karte_second.end())
@@ -100,7 +100,7 @@ void TreeWikiArticle::load(string filename)
         WikiArticle*  zw = new WikiArticle(title,ID);
         karte.insert(std::pair<string,WikiArticle*>(boost::to_lower_copy(title),zw));
         karte_second.insert(std::pair<int,WikiArticle*>(zw->ID(),zw));
-        if(i%5000==0)cout<<i<<". geladen"<<endl;
+        if(i%50000==0)cout<<i<<". geladen"<<endl;
     }
     cout<<karte.size()<<" Artikel geladen."<<endl;
 }

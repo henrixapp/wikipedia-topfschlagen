@@ -11,6 +11,9 @@ public:
     OpenCLWaterSimulator(LinkTree& verbindungen,TreeWikiArticle& artics);
     ~OpenCLWaterSimulator();
     std::vector<std::vector<int> > suche(int von, int zu);
+    void parameterisierteAusfuehrung(function<bool(char*,unsigned long,unsigned long)> weiter_laufen,
+                                     function<void(char*)> initialisierung,
+                                     function<void(char*)> endbewertung);
 private:
     cl::CommandQueue queue;
      cl::Kernel kernel;

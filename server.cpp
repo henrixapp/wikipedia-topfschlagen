@@ -22,7 +22,7 @@ int count_error_links=0;
        string links_base(args[2]);
        TreeWikiArticle wiki;
        wiki.load(wiki_base);
-       LinkTree links;
+       LinkTree links(&wiki);
        links.load(links_base);
        cout<<"Starte OpenCL..."<<endl;
        OpenCLWaterSimulator searchAgent(links,wiki);
