@@ -110,7 +110,7 @@ void SAXWikiHandler::startElement(const   XMLCh* const     name
         }
         else //jeden dritten link einfangen
         {
-            cout<<"Arbeite: "<<title.str();
+      if(fElementCount%1000==0)     cout<<"Arbeite: "<<title.str();
 
            //nichts zutun beim article hinzufügen
         }
@@ -126,7 +126,7 @@ void SAXWikiHandler::startElement(const   XMLCh* const     name
     else if((name[0]=='t')&&(name[1]=='e')&&(name[2]=='x')&&(name[3]=='t'))
     {
         zustand=Parsing_for_link;
-        cout<<"Parsing:"<<title.str()<<endl;
+    //    cout<<"Parsing:"<<title.str()<<endl;
        /* DatabaseVector<WikiArticle> alle(db,WIKIARTICLE_TABLE_NAME);
         stringstream term;
         term<<"Titel LIKE '%"<<title.str()<<"%'";
@@ -136,7 +136,7 @@ void SAXWikiHandler::startElement(const   XMLCh* const     name
         if(current==NULL)
         {
             zustand=Parsing_bullshit;
-            cout<<"Bullshit bei "<<title.str();
+//            cout<<"Bullshit bei "<<title.str();
             int a;
             cin>>a;
             return;
@@ -146,7 +146,7 @@ void SAXWikiHandler::startElement(const   XMLCh* const     name
             zustand=Parsing_bullshit;
 
         }
-          cout<<"Mit ID:"<<current->ID()<<endl;
+  //        cout<<"Mit ID:"<<current->ID()<<endl;
 
     }
     else

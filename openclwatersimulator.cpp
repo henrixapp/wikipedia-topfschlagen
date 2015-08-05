@@ -204,12 +204,12 @@ std::vector<std::vector<int> >  OpenCLWaterSimulator::suche(int von, int zu)
         zuwarten.push_back(event);
         char * status_read = (char*)queue.enqueueMapBuffer(status,true,CL_MAP_READ,0,articles.size(),&zuwarten,&schreiben);
         schreiben.wait();
-          cout<<"Erfolgreich gemappt"<<endl;
+        //  cout<<"Erfolgreich gemappt"<<endl;
         status_type =status_read[zu];
         cl::Event unmapping;
         queue.enqueueUnmapMemObject(status,status_read,NULL,&unmapping);
         unmapping.wait();
-        cout<<"Status was "<<(int)(status_type)<<endl;
+       // cout<<"Status was "<<(int)(status_type)<<endl;
         current_round++;//erhöhen
     }
 

@@ -34,7 +34,7 @@ WikiArticle * TreeWikiArticle::find(string id)
                 {
                     cout<<"mismatch, but caught"<<endl;
                 }
-                cerr<<"Error...--> not found:"<<id<<endl;
+//                cerr<<"Error...--> not found:"<<id<<endl;
                // int id;
                 //cin>>id;
                 //kein lazyloading--> erstellen
