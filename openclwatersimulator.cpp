@@ -22,9 +22,18 @@ OpenCLWaterSimulator::OpenCLWaterSimulator(LinkTree &verb, TreeWikiArticle &arts
         throw;
      }
     std::cout<<"Verfügbare Plattformen:"<<platforms.size()<<std::endl;
+    int platform=0;
+   if(platforms.size()>1){
+       int i=0;
+    for(auto p=platforms.begin();p!=platforms.end();p++){
+        std::cout<<"["<<i++<<"]"<<(*p).getInfo<CL_PLATFORM_NAME>()<<std::endl;
+    }
+	std::cout<<"Wähle:";
+	 std:cin>>platform;
+   }
     cl_int err = CL_SUCCESS;
     cl_context_properties properties[] =
-       { CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0])(), 0};
+       { CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[platform])(), 0};
     context = cl::Context(CL_DEVICE_TYPE_ALL, properties);
      devices = context.getInfo<CL_CONTEXT_DEVICES>();
     queue = cl::CommandQueue(context, devices[0], 0, &err);
@@ -151,15 +160,21 @@ std::vector<std::vector<int> >  OpenCLWaterSimulator::suche(int von, int zu)
     cout<<"ElEMCount set..."<<endl;
     kernel.setArg(4,zu);
     cout<<"Target set..."<<endl;
-    cl_char status_type=-1;
+    cl_char status_type=0;
     kernel.setArg(5,(cl_char)0);
     kernel.setArg(6,(cl_int)verbindungen.size());
+    //endzustand
+    cl::Buffer endstatus(context, CL_MEM_READ_WRITE, sizeof(cl_char));
+    cl_char* endstatus_arr=new cl_char[1];
+    endstatus_arr[0]=status_type;
+    queue.enqueueWriteBuffer(endstatus, CL_TRUE, 0, 1,endstatus_arr);
+    kernel.setArg(7,endstatus);
     cout<<"kernel finished..."<<endl;
     cl::NDRange local_n(preferredSize);
     cl::NDRange global_n((int)(ceil(articles.size()/(float)preferredSize)*preferredSize));
     cl_char current_round =0;
     const unsigned long time = XMLPlatformUtils::getCurrentMillis();
-    while(status_type==(cl_char)-1)
+    while(status_type==(cl_char)0)
     {
 
         /*
@@ -202,12 +217,12 @@ std::vector<std::vector<int> >  OpenCLWaterSimulator::suche(int von, int zu)
         queue.enqueueNDRangeKernel(kernel,cl::NullRange,global_n,local_n,NULL,&event);
         vector<cl::Event> zuwarten;
         zuwarten.push_back(event);
-        char * status_read = (char*)queue.enqueueMapBuffer(status,true,CL_MAP_READ,0,articles.size(),&zuwarten,&schreiben);
+        char * status_read = (char*)queue.enqueueMapBuffer(endstatus,true,CL_MAP_READ,0,1,&zuwarten,&schreiben);
         schreiben.wait();
         //  cout<<"Erfolgreich gemappt"<<endl;
-        status_type =status_read[zu];
+        status_type =status_read[0];
         cl::Event unmapping;
-        queue.enqueueUnmapMemObject(status,status_read,NULL,&unmapping);
+        queue.enqueueUnmapMemObject(endstatus,status_read,NULL,&unmapping);
         unmapping.wait();
        // cout<<"Status was "<<(int)(status_type)<<endl;
         current_round++;//erhöhen
