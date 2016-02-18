@@ -9,7 +9,11 @@ class OpenCLWaterSimulator
 {
 public:
     OpenCLWaterSimulator(LinkTree& verbindungen,TreeWikiArticle& artics);
-    int suche(int von, int zu);
+    ~OpenCLWaterSimulator();
+    std::vector<std::vector<int> > suche(int von, int zu);
+    void parameterisierteAusfuehrung(function<bool(char*,unsigned long,unsigned long)> weiter_laufen,
+                                     function<void(char*)> initialisierung,
+                                     function<void(char*)> endbewertung);
 private:
     cl::CommandQueue queue;
      cl::Kernel kernel;
@@ -17,6 +21,10 @@ private:
     size_t preferredSize = 32;
     LinkTree& verbindungen;
     TreeWikiArticle& articles;//Referenz, nicht kopieren
+
+    //daten
+    pair<int*,int*> daten;
+    cl::Buffer von_cl,start_f_von_cl;
 };
 
 #endif // OPENCLWATERSIMULATOR_H

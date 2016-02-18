@@ -9,7 +9,7 @@ class TreeWikiArticle// : public TreeManager<WikiArticle>
 public:
     TreeWikiArticle();
     WikiArticle * find(std::string titel);
-    WikiArticle * find(int id);
+    WikiArticle * find(int id) const;
     void add(string title);
     void save(string filename);
     void load(string filename);
@@ -18,6 +18,7 @@ public:
     int heighestID();
 private:
     std::map<string,WikiArticle*> karte;
+    map<int,WikiArticle*> karte_second;
 };
 
 #endif // TREEWIKIARTICLE_H

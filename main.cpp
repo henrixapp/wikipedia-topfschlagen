@@ -10,7 +10,7 @@
 int count_link=0;
 int count_error_links=0;
    int main (int argc, char* args[]) {
-
+        cout<<"int size:"<<sizeof(int)<<endl;
        try {
            XMLPlatformUtils::Initialize();
        }

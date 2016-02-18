@@ -5,6 +5,7 @@
 #include "saxwikihandler.h"
    #include <iostream>
 #include "openclwatersimulator.h"
+#include "wikiservertools.h"
    using namespace std;
    using namespace xercesc;
 //Forwarden
@@ -26,6 +27,8 @@ int count_error_links=0;
        cout<<"Starte OpenCL..."<<endl;
        OpenCLWaterSimulator searchAgent(links,wiki);
        bool running=true;
+       ///Server setup & go
+       WikiServerTools server(&links,&wiki,&searchAgent,uri("http://localhost:8787"));
        while(running)
        {
              WikiArticle* start =NULL;

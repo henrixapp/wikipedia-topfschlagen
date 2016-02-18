@@ -1,3 +1,9 @@
+//(c) 2015, Henrik Reinstädtler
+/**
+  * Diese Datei dient der Abschätzung von Entfernungen in Wikipedia-> wie weit sind die Sachen weg?
+  * Einführung von Priviligen
+  *
+*/
 #include <xercesc/parsers/SAXParser.hpp>
    #include <xercesc/sax/HandlerBase.hpp>
    #include <xercesc/util/XMLString.hpp>
@@ -37,30 +43,38 @@ int count_error_links=0;
             start = wiki.find(titel);
        }
        cout<<"Startartikel:"<<start->Titel()<<" mit ID:"<<start->ID()<<endl;
-       auto ende_a= (WikiArticle*)NULL;
-       while(ende_a==NULL)
-       {
-           cout<<"Gib bitte den Titel des Zielartikels ein:";
-           string ende;
-           cin>>ende;
-            ende_a = wiki.find(ende);
-       }
-       cout<<"Zielartikel:"<<ende_a->Titel()<<" mit ID:"<<ende_a->ID()<<endl;
+        unsigned int intinput;
+        cout<<"Wie weit sollen wir uns entfernen?";
+        cin>> intinput;
+        char Entfernung = intinput;
        cout<<"Starte Suche...";
-       auto result = searchAgent.suche(start->ID(),ende_a->ID());
-       cout<<"Ergebnis ["<<result[0].size()-1<<" Klicks] über "<<result.size()<<" Wege:"<<endl;
-       for(int j=0;j<result.size();j++)
+       searchAgent.parameterisierteAusfuehrung([Entfernung](char* d,unsigned long run, unsigned long time)
        {
-           cout<<j<<". Weg:"<<endl;
-           for(auto i = result[j].begin();i!= result[j].end();i++)
+           //int max=0;
+           //for(int i=0; i<wiki.size();i++) if(d[i]!=-1) if(d[i]>max) max=d[i];
+           //cout<<max<<" Treffer beim "<<run<<"Lauf"<<endl;
+           //Tester run gibt null passiert die Ausgabe an.
+           return run<(Entfernung+1);//true solange kleiner oder gleich, mit +1 klappt es aufjeden fall
+       },[&](char* array)
+       {
+           for(int i=0; i<wiki.size();i++) array[i]=-1;
+           array[start->ID()]=0;
+       },[&](char* array)
+       {
+           //durchgehen und dann Raussuchen bei -1
+           int count=0;
+           for(int i=0; i<wiki.size();i++)
            {
-               cout<<*i<<" ist der Artikel:"<<wiki.find(*i)->Titel()<<endl;
+               if(array[i]==Entfernung)
+               {
+                   cout<<++count<<wiki.find(i)->Titel()<<"-->"<<(int)array[i]<<endl;
+               }
            }
-        }
+           cout<<count<<" Treffer"<<endl;
+       });
        cout<<"Beenden [Y/n]?";
        string answer;cin>>answer;
        if(answer=="Y") running=false;
        }
        return 0;
    }
-
