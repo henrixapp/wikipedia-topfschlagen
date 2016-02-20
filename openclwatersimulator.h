@@ -5,13 +5,13 @@
 #include "linktree.h"
 #include "wikiarticle.h"
 #include "treewikiarticle.h"
-class OpenCLWaterSimulator
+class OpenCLWaterSimulator//TODO: Baseclass einführen
 {
 public:
     OpenCLWaterSimulator(LinkTree& verbindungen,TreeWikiArticle& artics);
     ~OpenCLWaterSimulator();
     std::vector<std::vector<int> > suche(int von, int zu);
-    void parameterisierteAusfuehrung(function<bool(char*,unsigned long,unsigned long)> weiter_laufen,
+     void parameterisierteAusfuehrung(function<bool(char*,unsigned long,unsigned long)> weiter_laufen,
                                      function<void(char*)> initialisierung,
                                      function<void(char*)> endbewertung);
 private:

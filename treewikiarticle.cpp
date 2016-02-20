@@ -1,5 +1,7 @@
 #include "treewikiarticle.h"
-#include "database/databasevector.h"
+#include <boost/algorithm/string.hpp>
+#include <fstream>
+//#include "database/databasevector.h"
 /*TreeManager<WikiArticle>::RelaxedDecidor decidor =[](WikiArticle * node,WikiArticle* wert)
 {
     if((node->Titel())<(wert->Titel()))

@@ -1,8 +1,8 @@
 #ifndef WIKIARTICLE_H
 #define WIKIARTICLE_H
-#include "database/macros.h"
+//#include "database/macros.h"
 #include <boost/unordered_set.hpp>
-#define WIKIARTICLE_TABLE_NAME "WikiArticle"
+//#define WIKIARTICLE_TABLE_NAME "WikiArticle"
 /*class WikiArticle : public BasisItem
 {
 public:
@@ -14,6 +14,8 @@ public:
         return Titel() == p->Titel();
       }
 };*/
+#include <iostream>
+using namespace std;
 class WikiArticle
 {
 public:

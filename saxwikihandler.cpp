@@ -37,7 +37,7 @@
 #include <cstdint>        // std::uint_least32_t
 #include "wikiarticle.h"
 #include "wikilink.h"
-#include "database/databasevector.h"
+//#include "database/databasevector.h"
 // ---------------------------------------------------------------------------
 //  SAXWikiHandler: Constructors and Destructor
 // ---------------------------------------------------------------------------

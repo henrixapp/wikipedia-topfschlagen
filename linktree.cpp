@@ -1,5 +1,5 @@
 #include "linktree.h"
-
+#include <fstream>
 LinkTree::LinkTree(TreeWikiArticle *items)
 {
     __start_f_von_List= NULL;

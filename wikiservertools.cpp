@@ -1,5 +1,5 @@
 #include "wikiservertools.h"
-
+#include <boost/lexical_cast.hpp>
 WikiServerTools::WikiServerTools(LinkTree *l, TreeWikiArticle *t, OpenCLWaterSimulator* sim, uri url):Artikel(t),verbindungen(l),m_listener(http_listener(url)),simulator(sim)
 
 {

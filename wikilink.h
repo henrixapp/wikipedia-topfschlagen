@@ -1,6 +1,6 @@
 #ifndef WIKILINK_H
 #define WIKILINK_H
-#include "database/macros.h"
+//#include "database/macros.h"
 #include "wikiarticle.h"
 #define WIKILINK_TABLE_NAME "WikiLink"
 extern int count_link;

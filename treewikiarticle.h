@@ -1,6 +1,6 @@
 #ifndef TREEWIKIARTICLE_H
 #define TREEWIKIARTICLE_H
-#include "Tree/treemanager.h"
+//#include "Tree/treemanager.h"
 #include "wikiarticle.h"
 #include <map>
 using namespace std;

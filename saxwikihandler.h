@@ -34,7 +34,7 @@ XERCES_CPP_NAMESPACE_BEGIN
 class AttributeList;
 XERCES_CPP_NAMESPACE_END
 #include <sstream>
-#include "database/sqliteconnection.h"
+//#include "database/sqliteconnection.h"
 #include "wikiarticle.h"
 #include "treewikiarticle.h"
 #include "linktree.h"
