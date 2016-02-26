@@ -112,6 +112,7 @@ void LinkTree::add(WikiLink *a)
     //
     items.push_back(a);
 }
+/// @return vonList,start_f_vonlist
 std::pair<int*,int*> LinkTree::toCL()
 {
     return pair<int*,int*>(__vonList,__start_f_von_List);
