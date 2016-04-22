@@ -6,11 +6,13 @@
    #include <iostream>
 #include "openclwatersimulator.h"
 #include "wikiservertools.h"
+#include "classicaldijkstraprovider.h"
    using namespace std;
    using namespace xercesc;
 //Forwarden
 int count_link=0;
 int count_error_links=0;
+bool opencl=false;
    int main (int argc, char* args[]) {
        if(argc<3)
        {
@@ -25,10 +27,12 @@ int count_error_links=0;
        LinkTree links(&wiki);
        links.load(links_base);
        cout<<"Starte OpenCL..."<<endl;
-       OpenCLWaterSimulator searchAgent(links,wiki);
+       DijkstraProvider*  searchAgent=NULL;
+       if(opencl) searchAgent = new OpenCLWaterSimulator(links,wiki);
+       else searchAgent= new ClassicalDijkstraProvider(links,wiki);
        bool running=true;
        ///Server setup & go
-       WikiServerTools server(&links,&wiki,&searchAgent,uri("http://localhost:8787"));
+       WikiServerTools server(&links,&wiki,searchAgent,uri("http://localhost:8787"));
        while(running)
        {
              WikiArticle* start =NULL;
@@ -50,7 +54,8 @@ int count_error_links=0;
        }
        cout<<"Zielartikel:"<<ende_a->Titel()<<" mit ID:"<<ende_a->ID()<<endl;
        cout<<"Starte Suche...";
-       auto result = searchAgent.suche(start->ID(),ende_a->ID());
+       auto result = searchAgent->suche(start->ID(),ende_a->ID());
+       if(result.size()>0){
        cout<<"Ergebnis ["<<result[0].size()-1<<" Klicks] über "<<result.size()<<" Wege:"<<endl;
        for(int j=0;j<result.size();j++)
        {
@@ -60,6 +65,7 @@ int count_error_links=0;
                cout<<*i<<" ist der Artikel:"<<wiki.find(*i)->Titel()<<endl;
            }
         }
+       }
        cout<<"Beenden [Y/n]?";
        string answer;cin>>answer;
        if(answer=="Y") running=false;

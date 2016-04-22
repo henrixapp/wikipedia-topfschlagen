@@ -1,5 +1,8 @@
 #include "classicaldijkstraprovider.h"
 #include "openclwatersimulator.h"
+#include <xercesc/parsers/SAXParser.hpp>
+   #include <xercesc/sax/HandlerBase.hpp>
+   #include <xercesc/util/XMLString.hpp>
 ClassicalDijkstraProvider::ClassicalDijkstraProvider(LinkTree &tree,TreeWikiArticle &wikia):links(tree),wiki(wikia)
 {
 
@@ -34,6 +37,11 @@ else {
 }
 //#schon da
 }
+ long getCurrentMillis(){
+
+    return xercesc::XMLPlatformUtils::getCurrentMillis();
+ }
+
 std::vector<std::vector<int> > ClassicalDijkstraProvider::suche(int von, int zu){
     //Später;
     //parameterisierteAusfuehrung([&](char * bett,unsigned long ));
@@ -68,5 +76,25 @@ std::vector<std::vector<int> > ClassicalDijkstraProvider::suche(int von, int zu)
 
 void ClassicalDijkstraProvider::parameterisierteAusfuehrung(function<bool (char *, unsigned long, unsigned long)> weiter_laufen, function<void (char *)> initialisierung, function<void (char *)> endbewertung)
 {
-
+    char * feld= new char[wiki.size()];
+    initialisierung(feld);
+    char tries=-1;
+    //Laden aus links.toCL
+    auto daten =links.toCL();
+    int * von_array= links.toCL().first;
+    int * start_f_von= links.toCL().second;
+#define TRIES_MAX 25
+    //simulieren
+    cout<<"[ClassicalDijkstra] daten erstellt"<<wiki.size()<<endl;
+    long time = getCurrentMillis();
+    while(weiter_laufen(feld,tries++,getCurrentMillis()-time)){
+        cout<<"[ClassicalDijkstra]"<<tries<<endl;
+        for(int i=0;i<wiki.size();i++)
+        {
+            ocl_water_sim(von_array,start_f_von,feld,wiki.size(),0,tries,links.size(), i);
+        }
+    }
+    //endbewertung
+    endbewertung(feld);
+    delete[] feld;
 }
